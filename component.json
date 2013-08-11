@@ -1,0 +1,17 @@
+{
+  "name": "world",
+  "version": "0.0.1",
+  "description": "game world container",
+  "keywords": ["game","world","loop"],
+  "author": "stagas",
+  "license": "MIT",
+  "dependencies": {
+    "component/inherit": "*",
+    "stagas/tree-emit": "*",
+    "entity/loop": "*"
+  },
+  "development": {
+    "entity/vector": "*"
+  },
+  "scripts": ["index.js"]
+}

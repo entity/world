@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>loop</title>
+    <style>
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .counter {
+      display: inline-block;
+      position: absolute;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 5px;
+      border: 1px solid #000;
+    }
+
+    </style>
+  </head>
+  <body>
+    <script src="build/build.js"></script>
+    <script>
+
+    // dependencies
+
+    var World = require('world');
+    var Vector = require('vector');
+
+    // Div component
+
+    function Div(className) {
+      this.el = document.createElement('div');
+      this.container = document.body;
+      if (className) this.setClass(className);
+    }
+
+    Div.prototype.setClass = function(className) {
+      this.el.className = className;
+    };
+
+    Div.prototype.setPosition = function(vec) {
+      this.el.style.left = vec.x + 'px';
+      this.el.style.top = vec.y + 'px';
+    };
+
+    Div.prototype.setContents = function(html) {
+      this.el.innerHTML = html;
+    };
+
+    Div.prototype.onstart = function() {
+      this.container.appendChild(this.el);
+    };
+
+    // Mouse component
+
+    function Mouse() {
+      this.container = document.body;
+      this.position = new Vector;
+    }
+
+    Mouse.prototype.onstart = function() {
+      var self = this;
+      this.container.onmousemove = function(e) {
+        self.position.x = e.clientX;
+        self.position.y = e.clientY;
+      };
+    };
+
+    // Movable component
+
+    function Movable() {
+      this.previous = new Vector;
+      this.current = new Vector;
+      this.position = new Vector;
+      this.velocity = new Vector;
+      this.friction = new Vector(0.94);
+    }
+
+    Movable.prototype.onupdate = function() {
+      this.previous = this.current.clone();
+      this.current.madd(this.velocity);
+      this.velocity.mmul(this.friction);
+    };
+
+    Movable.prototype.onrender = function(deltaTime, alpha) {
+      this.position = this.previous.lerp(this.current, alpha);
+    };
+
+    // Counter entity
+
+    function Counter() {
+      this.div = new Div('counter');
+      this.movable = new Movable;
+      this.mouse = new Mouse;
+      this.speed = new Vector(0.015);
+    }
+
+    Counter.prototype.onupdate = function() {
+      var diff = this.mouse.position.sub(this.movable.position);
+      this.movable.velocity.madd(diff.mul(this.speed));
+    };
+
+    Counter.prototype.onrender = function(deltaTime, alpha, frame, timeElapsed) {
+      this.div.setContents(
+        'deltaTime: ' + deltaTime + '<br>' +
+        'alpha: ' + alpha.toFixed(2) + '<br>' +
+        'frame: ' + frame + '<br>' +
+        'time elapsed: ' + (timeElapsed / 1000).toFixed(1)
+      );
+
+      this.div.setPosition(this.movable.position);
+    };
+
+    // the world
+
+    var world = new World;
+    world.counter = new Counter;
+    world.fps(60).start();
+
+    </script>
+  </body>
+</html>
